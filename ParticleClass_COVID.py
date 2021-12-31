@@ -471,12 +471,13 @@ class patient(Monomers):
             if sum(covid_status_pair) == 1:
                 infected_pair= [mono_1, mono_2]
                 next_infected = infected_pair[covid_status_pair.index(0)]
-                infector = infected_pair[covid_status_pair.index(self.p_covid)]
-                p_infected = self.p_of_inf[next_infected] + 1. #probability for the non infected to get COVID.
+                infector = infected_pair[covid_status_pair.index(1)]
+                #Here we will considerate it to try to work with probability with vaccines for example
+                p_infected = self.p_of_inf[next_infected] + self.p_of_inf[next_infected] #probability for the non infected to get COVID.
                 p_infector = self.p_of_inf[infector] #orobability for the infected to give COVID.
                 p_of_transmission = p_infected*p_infector
                 trial = random.random()
-                if trial <= p_of_transmission:
+                if trial <= p_infector:
                     self.covid_status[next_infected] = 1
                     self.p_of_inf[next_infected] = self.p_covid
                     
@@ -485,7 +486,7 @@ class patient(Monomers):
             mono = self.next_recovery.mono
             self.covid_status[mono] = 1/4
             self.time_infected[mono] = 0 
-            self.p_of_inf[mono] = 0
+            self.p_of_inf[mono] = 1 - self.p_covid
         
 class Dimers(Monomers):
     """

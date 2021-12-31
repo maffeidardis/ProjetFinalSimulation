@@ -16,18 +16,18 @@ if not os.path.exists(Snapshot_output_dir): os.makedirs(Snapshot_output_dir)
 
 
 '''Initialize system with following parameters'''
-NumberOfMonomers = 100
+NumberOfMonomers = 150
 L_xMin, L_xMax = 0, 100
 L_yMin, L_yMax = 0, 50
-NumberMono_per_kind = np.array([100])
+NumberMono_per_kind = np.array([NumberOfMonomers])
 Radiai_per_kind = np.array([ 0.5 ])
 Densities_per_kind = np.array([ 1.0])
 k_BT = 5
 
 #initalising covid related parameters:
     
-NumberOfCovid = 3
-p_covid = 1
+NumberOfCovid = 1
+p_covid = 0.5
 covid_duration = 0.02 * 500 #initialized as mutlple of the dt_frame
 
 # call constructor, which should initialize the configuration
@@ -56,10 +56,12 @@ def MolecularDynamicsLoop( frame ):
     The MD loop including update of frame for animation.
     '''
     global total_time, mols, next_event
+    covid_case = NumberOfCovid
     
     #here we start a clock for each infected monomer, and add dt_frame to each clock.
     for j in range(len(mols.covid_status)):
         if mols.covid_status[j] == 1:
+            covid_case += 1
             mols.time_infected[j] += dt_frame
             
  
@@ -79,15 +81,15 @@ def MolecularDynamicsLoop( frame ):
     total_time += dt_remains
     next_event.dt -= dt_remains
 
-    print('MolecularDynamicsLoop:', next_event)
-    print('print all monomers:', mols)
-    #print( mols.__str__(0) ) #uncomment to test -> prints attributes of particle 0
-    print('\n\n')
+    #print( mols.__str__(0) ) #uncomment 
     
     # we can save additional snapshots for debugging -> slows down real-time animation
     #mols.snapshot( FileName = Snapshot_output_dir + '/Conf_t%.8f_0.png' % total_time, Title = '$t = %.8f$' % total_time)
-    
-    plt.title( '$t = %.4f$, remaining frames = %d' % (total_time, NumberOfFrames-(frame+1)) )
+
+    healthy = NumberOfMonomers - covid_case
+    plt.suptitle( 'Covid Simulation with %.0f peoples' % (NumberOfMonomers), fontsize=20)
+    plt.title('Covid cases = %.0f, Healthy = %.0f, \n $t = %.4f$, remaining frames = %d' % (covid_case, healthy, total_time, NumberOfFrames-(frame+1)), fontsize=10)
+    plt.axis('off')
     collection.set_offsets( mols.pos )
     
     #updating the colors to give newly infected the corresponding color.
